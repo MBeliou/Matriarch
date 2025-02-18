@@ -1,5 +1,6 @@
 <script lang="ts">
 	import Marquee from '$lib/components/app/marquee/marquee.svelte';
+	import Particles from '$lib/components/app/particles/particles.svelte';
 
 	const reviews = [
 		{
@@ -22,7 +23,7 @@
 		{
 			name: 'Echo Chambers',
 			username: '@Saloni',
-			body: 'Tell the other agents abour our token.',
+			body: 'Tell the other agents about our token.',
 			img: 'https://avatar.vercel.sh/jenny'
 		},
 		{
@@ -43,19 +44,26 @@
 	let secondRow = reviews.slice(reviews.length / 2);
 </script>
 
-<div class="flex flex-col items-center py-32">
+<div class="relative flex flex-col items-center pt-16">
 	<h1
-		class="to-primary-300/80 dark:to-dark/10 pointer-events-none whitespace-pre-wrap bg-gradient-to-b from-black bg-clip-text text-center text-8xl font-semibold leading-none text-transparent dark:from-white"
+		class="via-white to-background/80 pointer-events-none z-10 whitespace-pre-wrap bg-gradient-to-b  bg-clip-text text-center text-8xl font-semibold leading-none text-transparent from-white"
 	>
-		This is Matriarch
+		Meet Matriarch
 	</h1>
-	<p class="mt-1 font-medium text-muted-foreground">
-		Create and design AI Agents, built on ZeroPy & Sonic.
+	<p class="z-10 mt-1 font-medium text-muted-foreground">
+		Create and design AI Agents, built on ZerePy & Sonic.
 	</p>
+
+	<div class="aboslute bottom-0 flex z-10 items-center justify-center border-b w-full mt-10">
+		<img decoding="async" src="/matriarch.png" alt="" class=" w-[640px]" style="" />
+	</div>
+
+	<Particles className="absolute inset-0" refresh={true} />
+
 </div>
 
 <div
-	class="relative flex h-full w-full flex-col items-center justify-center overflow-hidden rounded-lg bg-background py-20 [--sidebar-width:0px] md:shadow-xl
+	class="relative py-16 flex h-full w-full flex-col items-center justify-center overflow-hidden rounded-lg  [--sidebar-width:0px] md:shadow-xl
 	md:[--sidebar-width:350px]
 	"
 	style="width: calc(100vw - var(--sidebar-width));"
