@@ -1,15 +1,11 @@
 <script lang="ts">
 	import BotIcon from 'lucide-svelte/icons/bot';
-    import UserIcon from "lucide-svelte/icons/user";
+	import UserIcon from 'lucide-svelte/icons/user';
 
 	let { role, content }: { role: 'assistant' | 'user'; content: string } = $props();
 </script>
 
-<div
-	class={`flex w-full flex-row gap-4 px-4 first-of-type:pt-20 md:w-[500px] md:px-0`}
-	initial={{ y: 5, opacity: 0 }}
-	animate={{ y: 0, opacity: 1 }}
->
+<div class={`flex w-full flex-row gap-4 px-4 first-of-type:pt-20 md:w-[500px] md:px-0`}>
 	<div class="flex size-[24px] flex-shrink-0 flex-col items-center justify-center text-zinc-400">
 		{#if role === 'assistant'}
 			<BotIcon />
