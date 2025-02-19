@@ -11,7 +11,7 @@
 <Sidebar.Provider style="--sidebar-width: 350px;">
 	<AppSidebar />
 	<Sidebar.Inset>
-		<header class="sticky top-0 flex shrink-0 items-center gap-2 border-b bg-background p-4">
+		<header class="sticky z-50 top-0 flex shrink-0 items-center gap-2 border-b bg-background p-4">
 			<Sidebar.Trigger class="-ml-1" />
 			<Separator orientation="vertical" class="mr-2 h-4" />
 			<Breadcrumb.Root>

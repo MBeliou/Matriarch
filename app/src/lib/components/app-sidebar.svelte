@@ -1,11 +1,7 @@
 <script lang="ts" module>
-	import ArchiveX from 'lucide-svelte/icons/archive-x';
-	import File from 'lucide-svelte/icons/file';
-	import Inbox from 'lucide-svelte/icons/inbox';
-	import Send from 'lucide-svelte/icons/send';
-	import Trash2 from 'lucide-svelte/icons/trash-2';
-	import Robot from "lucide-svelte/icons/bot-message-square"
-
+	import Robot from 'lucide-svelte/icons/bot-message-square';
+	import MessagesSquare from 'lucide-svelte/icons/messages-square';
+	import PlusIcon from 'lucide-svelte/icons/plus';
 	// This is sample data
 	const data = {
 		user: {
@@ -16,43 +12,24 @@
 		navMain: [
 			{
 				title: 'Agents',
-				url: '#',
+				url: '/agents',
 				icon: Robot,
 				isActive: true
 			},
 			{
-				title: 'Drafts',
-				url: '#',
-				icon: File,
-				isActive: false
-			},
-			{
-				title: 'Sent',
-				url: '#',
-				icon: Send,
-				isActive: false
-			},
-			{
-				title: 'Junk',
-				url: '#',
-				icon: ArchiveX,
-				isActive: false
-			},
-			{
-				title: 'Trash',
-				url: '#',
-				icon: Trash2,
+				title: 'Chat',
+				url: '/chat',
+				icon: MessagesSquare,
 				isActive: false
 			}
 		],
-		mails: [
+		agents: [
 			{
-				name: 'Sonic Example',
+				name: 'SonicExample',
 				email: 'williamsmith@example.com',
 				subject: 'Meeting Tomorrow',
 				date: '09:34 AM',
-				teaser:
-					'Your transfer went through'
+				teaser: 'Your transfer went through'
 			},
 			{
 				name: 'Alice Smith',
@@ -61,70 +38,6 @@
 				date: 'Yesterday',
 				teaser:
 					"Thanks for the update. The progress looks great so far.\nLet's schedule a call to discuss the next steps."
-			},
-			{
-				name: 'Bob Johnson',
-				email: 'bobjohnson@example.com',
-				subject: 'Weekend Plans',
-				date: '2 days ago',
-				teaser:
-					"Hey everyone! I'm thinking of organizing a team outing this weekend.\nWould you be interested in a hiking trip or a beach day?"
-			},
-			{
-				name: 'Emily Davis',
-				email: 'emilydavis@example.com',
-				subject: 'Re: Question about Budget',
-				date: '2 days ago',
-				teaser:
-					"I've reviewed the budget numbers you sent over.\nCan we set up a quick call to discuss some potential adjustments?"
-			},
-			{
-				name: 'Michael Wilson',
-				email: 'michaelwilson@example.com',
-				subject: 'Important Announcement',
-				date: '1 week ago',
-				teaser:
-					"Please join us for an all-hands meeting this Friday at 3 PM.\nWe have some exciting news to share about the company's future."
-			},
-			{
-				name: 'Sarah Brown',
-				email: 'sarahbrown@example.com',
-				subject: 'Re: Feedback on Proposal',
-				date: '1 week ago',
-				teaser:
-					"Thank you for sending over the proposal. I've reviewed it and have some thoughts.\nCould we schedule a meeting to discuss my feedback in detail?"
-			},
-			{
-				name: 'David Lee',
-				email: 'davidlee@example.com',
-				subject: 'New Project Idea',
-				date: '1 week ago',
-				teaser:
-					"I've been brainstorming and came up with an interesting project concept.\nDo you have time this week to discuss its potential impact and feasibility?"
-			},
-			{
-				name: 'Olivia Wilson',
-				email: 'oliviawilson@example.com',
-				subject: 'Vacation Plans',
-				date: '1 week ago',
-				teaser:
-					"Just a heads up that I'll be taking a two-week vacation next month.\nI'll make sure all my projects are up to date before I leave."
-			},
-			{
-				name: 'James Martin',
-				email: 'jamesmartin@example.com',
-				subject: 'Re: Conference Registration',
-				date: '1 week ago',
-				teaser:
-					"I've completed the registration for the upcoming tech conference.\nLet me know if you need any additional information from my end."
-			},
-			{
-				name: 'Sophia White',
-				email: 'sophiawhite@example.com',
-				subject: 'Team Dinner',
-				date: '1 week ago',
-				teaser:
-					"To celebrate our recent project success, I'd like to organize a team dinner.\nAre you available next Friday evening? Please let me know your preferences."
 			}
 		]
 	};
@@ -138,12 +51,24 @@
 	import { Switch } from '$lib/components/ui/switch/index.js';
 	import Command from 'lucide-svelte/icons/command';
 	import type { ComponentProps } from 'svelte';
+	import { sidebarMenuButtonVariants } from './ui/sidebar/sidebar-menu-button.svelte';
+	import Button from './ui/button/button.svelte';
 
 	let { ref = $bindable(null), ...restProps }: ComponentProps<typeof Sidebar.Root> = $props();
 
 	let activeItem = $state(data.navMain[0]);
-	let mails = $state(data.mails);
+	let agents = $state(data.agents);
 	const sidebar = useSidebar();
+
+	let searchInput = $state<string>(null!);
+
+	let filteredAgents = $derived.by(() => {
+		if (searchInput && searchInput.length > 2) {
+			return agents.filter((agent) => agent.name.toLowerCase().includes(searchInput.toLowerCase()));
+		} else {
+			return agents;
+		}
+	});
 </script>
 
 <Sidebar.Root
@@ -161,14 +86,14 @@
 				<Sidebar.MenuItem>
 					<Sidebar.MenuButton size="lg" class="md:h-8 md:p-0">
 						{#snippet child({ props })}
-							<a href="##" {...props}>
+							<a href="/" {...props}>
 								<div
 									class="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground"
 								>
 									<Command class="size-4" />
 								</div>
 								<div class="grid flex-1 text-left text-sm leading-tight">
-									<span class="truncate font-semibold">Acme Inc</span>
+									<span class="truncate font-semibold">Matriarch</span>
 									<span class="truncate text-xs">Enterprise</span>
 								</div>
 							</a>
@@ -183,25 +108,9 @@
 					<Sidebar.Menu>
 						{#each data.navMain as item (item.title)}
 							<Sidebar.MenuItem>
-								<Sidebar.MenuButton
-									tooltipContentProps={{
-										hidden: false
-									}}
-									onclick={() => {
-										activeItem = item;
-										const mail = data.mails.sort(() => Math.random() - 0.5);
-										mails = mail.slice(0, Math.max(5, Math.floor(Math.random() * 10) + 1));
-										sidebar.setOpen(true);
-									}}
-									isActive={activeItem.title === item.title}
-									class="px-2.5 md:px-2"
-								>
-									{#snippet tooltipContent()}
-										{item.title}
-									{/snippet}
-									<item.icon />
-									<span>{item.title}</span>
-								</Sidebar.MenuButton>
+								<a href={item.url} title={item.title} class={sidebarMenuButtonVariants.base}>
+									<item.icon></item.icon>
+								</a>
 							</Sidebar.MenuItem>
 						{/each}
 					</Sidebar.Menu>
@@ -215,43 +124,42 @@
 
 	<!-- This is the second sidebar -->
 	<!-- We disable collapsible and let it fill remaining space -->
-	<Sidebar.Root collapsible="none" class="hidden flex-1 md:flex relative">
+	<Sidebar.Root collapsible="none" class="relative hidden flex-1 md:flex">
 		<Sidebar.Header class="gap-3.5 border-b p-4">
 			<div class="flex w-full items-center justify-between">
 				<div class="text-base font-medium text-foreground">
 					{activeItem.title}
 				</div>
+				<!-- 
 				<Label class="flex items-center gap-2 text-sm">
 					<span>Unreads</span>
 					<Switch class="shadow-none" />
 				</Label>
+				 -->
+				<Button size="sm" href="/agents/new"><PlusIcon></PlusIcon>Create</Button>
 			</div>
-			<Sidebar.Input placeholder="Type to search..." />
+			<Sidebar.Input placeholder="Type to search..." bind:value={searchInput} />
 		</Sidebar.Header>
 		<Sidebar.Content class="">
 			<Sidebar.Group class="px-0 ">
 				<Sidebar.GroupContent class=" mb-24">
-					{#each mails as mail (mail.email)}
+					{#each filteredAgents as agent (agent.email)}
 						<a
-							href="##"
+							href="/agents/{agent.name}"
 							class="flex flex-col items-start gap-2 whitespace-nowrap border-b p-4 text-sm leading-tight last:border-b-0 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
 						>
 							<div class="flex w-full items-center gap-2">
-								<span>{mail.name}</span>{' '}
-								<span class="ml-auto text-xs">{mail.date}</span>
+								<span>{agent.name}</span>{' '}
+								<span class="ml-auto text-xs">{agent.date}</span>
 							</div>
-							<span class="font-medium">{mail.subject}</span>
+							<span class="font-medium">{agent.subject}</span>
 							<span class="line-clamp-2 w-[260px] whitespace-break-spaces text-xs">
-								{mail.teaser}
+								{agent.teaser}
 							</span>
 						</a>
 					{/each}
-					
 				</Sidebar.GroupContent>
 			</Sidebar.Group>
 		</Sidebar.Content>
-		<div class="absolute bottom-0 w-full bg-red-500">
-			Create Agent
-		</div>
 	</Sidebar.Root>
 </Sidebar.Root>
