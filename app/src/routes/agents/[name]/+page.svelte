@@ -1,5 +1,7 @@
 <script lang="ts">
 	import ChatInput from '$lib/components/app/chat-input/ChatInput.svelte';
+	import { unknown } from 'zod';
+	import Panel, { type PanelProps } from './panel.svelte';
 
 	let { data } = $props();
 
@@ -24,21 +26,56 @@
 			content: 'Your Transaction went through'
 		}
 	]);
+
+	/*
+	{
+  "connection": "openai",
+  "action": "resume-chat",
+  "params": [[
+    {
+      "role": "system",
+      "content": "You are an helpful assistant, please answer in a friendly manner"
+    },
+    {
+      "role": "user",
+      "content": "This is my prompt, that's the best I have"
+    },
+    {
+      "role": "assistant",
+      "content": "No problem at all! I'd be happy to assist with whatever you need. Just let me know how I can help you with your prompt."
+    }
+  ]]
+}*/
+
+	let names = {
+		assistant: data.agent.name,
+		user: 'You'
+	};
 </script>
 
 <div class="grid h-full grid-cols-3 grid-rows-1">
 	<div class="relative col-span-2 flex flex-col border-r">
 		<div class="flex-1">
 			<div class=" h-[94svh] overflow-y-auto">
-				<div class="flex flex-col gap-4 overflow-y-auto">
+				<div class="flex flex-col gap-4 overflow-y-auto p-4">
 					{#each messages as message}
+						{@const displayedName = names[message.origin] || null}
 						<div
-							class=" border p-4 {message.origin === 'user'
-								? 'self-end'
-								: ''} {message.origin === 'matriarch' ? 'w-full' : 'w-fit'}"
+							class="{message.origin === 'user' ? 'self-end text-right' : ''} {message.origin ===
+							'matriarch'
+								? 'w-full'
+								: 'w-fit'}"
 						>
-							<div>{message.origin}</div>
-							<div>
+							{#if message.origin !== 'matriarch'}
+								<div class="mb-1 text-sm font-medium capitalize text-muted-foreground">
+									{displayedName}
+								</div>
+							{/if}
+							<div
+								class="rounded border p-4 {message.origin === 'matriarch'
+									? 'rounded-lg bg-primary text-foreground'
+									: ''}"
+							>
 								{message.content}
 							</div>
 						</div>
@@ -90,7 +127,7 @@
 	</div>
 	<div class="flex flex-col">
 		<div class="flex flex-1 flex-col border-b">
-			{JSON.stringify(data.agent, null, 2)}
+			<Panel agent={data.agent as unknown as PanelProps['agent']}></Panel>
 		</div>
 		<div>actions</div>
 	</div>
