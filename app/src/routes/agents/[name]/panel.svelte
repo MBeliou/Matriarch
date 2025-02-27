@@ -16,13 +16,13 @@
 	<div class="flex items-center">
 		<Avatar.Root>
 			<Avatar.Image src="/orinfumo.png" alt="{agent.name} avatar" />
-			<Avatar.Fallback>CN</Avatar.Fallback>
+			<Avatar.Fallback>{agent.name}</Avatar.Fallback>
 		</Avatar.Root>
 		<div class="ml-2">
 			<h1 class="text-xl">
 				{agent.name}
 			</h1>
-			<p class="text-sm text-muted-foreground">#{agent.id}</p>
+			<p class="text-sm text-muted-foreground">Agent #{agent.id}</p>
 		</div>
 	</div>
 
@@ -42,20 +42,30 @@
 
 	<div>
 		<h2>Integrations</h2>
-		<div class="mt-4 space-y-6">
-			{#each agent.config as config}
-				<div>
+		<div class="mt-4 space-y-4">
+			<!-- @ts-expect-error zod and typescript are being a bit too overbearing here -->
+			{#each [...agent.config] as config}
+				<div class="border-b pb-4">
 					<div class="text-lg font-medium capitalize">{config.name}</div>
-					<ul class="space-y-2">
+					<ul class="mt-2 space-y-2">
 						{#each Object.entries(config) as [entry, value]}
-							<li class=" text-sm">
+							<li class="text-sm">
 								<div class="capitalize text-muted-foreground">
 									{entry}
 								</div>
 
 								<div class="overflow-hidden text-ellipsis text-right">
 									<div class="">
+                                        {#if Array.isArray(value)}
+                                            {#each value as subValue}
+                                            <div>
+                                                {JSON.stringify(subValue)}
+
+                                            </div>
+                                            {/each}
+                                        {:else}
 										{value || 'No value provided'}
+                                        {/if}
 									</div>
 								</div>
 							</li>

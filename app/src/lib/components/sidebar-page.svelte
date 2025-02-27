@@ -5,11 +5,11 @@
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
 	import type { Snippet } from 'svelte';
 
-	let { children }: { children: Snippet } = $props();
+	let { children, agents }: { children: Snippet } = $props();
 </script>
 
 <Sidebar.Provider style="--sidebar-width: 350px;">
-	<AppSidebar />
+	<AppSidebar {agents}/>
 	<Sidebar.Inset>
 		<header class="sticky z-50 top-0 flex shrink-0 items-center gap-2 border-b bg-background p-4">
 			<Sidebar.Trigger class="-ml-1" />

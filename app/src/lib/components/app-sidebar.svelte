@@ -2,6 +2,7 @@
 	import Robot from 'lucide-svelte/icons/bot-message-square';
 	import MessagesSquare from 'lucide-svelte/icons/messages-square';
 	import PlusIcon from 'lucide-svelte/icons/plus';
+
 	// This is sample data
 	const data = {
 		user: {
@@ -22,42 +23,32 @@
 				icon: MessagesSquare,
 				isActive: false
 			}
-		],
-		agents: [
-			{
-				name: 'SonicExample',
-				email: 'williamsmith@example.com',
-				subject: 'Meeting Tomorrow',
-				date: '09:34 AM',
-				teaser: 'Your transfer went through'
-			},
-			{
-				name: 'Alice Smith',
-				email: 'alicesmith@example.com',
-				subject: 'Re: Project Update',
-				date: 'Yesterday',
-				teaser:
-					"Thanks for the update. The progress looks great so far.\nLet's schedule a call to discuss the next steps."
-			}
 		]
 	};
 </script>
 
 <script lang="ts">
 	import NavUser from '$lib/components/nav-user.svelte';
-	import { Label } from '$lib/components/ui/label/index.js';
 	import { useSidebar } from '$lib/components/ui/sidebar/context.svelte.js';
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
-	import { Switch } from '$lib/components/ui/switch/index.js';
 	import Command from 'lucide-svelte/icons/command';
 	import type { ComponentProps } from 'svelte';
 	import { sidebarMenuButtonVariants } from './ui/sidebar/sidebar-menu-button.svelte';
 	import Button from './ui/button/button.svelte';
+	import type { z } from 'zod';
+	import type { schemas } from '$lib/types/matriarch.zod';
 
-	let { ref = $bindable(null), ...restProps }: ComponentProps<typeof Sidebar.Root> = $props();
+	type Agent = z.infer<(typeof schemas)['AgentResponse']>;
+	let {
+		ref = $bindable(null),
+		agents,
+		...restProps
+	}: ComponentProps<typeof Sidebar.Root> & {
+		agents: Agent[];
+	} = $props();
 
 	let activeItem = $state(data.navMain[0]);
-	let agents = $state(data.agents);
+	//let agents = $state(data.agents);
 	const sidebar = useSidebar();
 
 	let searchInput = $state<string>(null!);
@@ -77,9 +68,6 @@
 	class="overflow-hidden [&>[data-sidebar=sidebar]]:flex-row"
 	{...restProps}
 >
-	<!-- This is the first sidebar -->
-	<!-- We disable collapsible and adjust width to icon. -->
-	<!-- This will make the sidebar appear as icons. -->
 	<Sidebar.Root collapsible="none" class="!w-[calc(var(--sidebar-width-icon)_+_1px)] border-r">
 		<Sidebar.Header>
 			<Sidebar.Menu>
@@ -130,12 +118,7 @@
 				<div class="text-base font-medium text-foreground">
 					{activeItem.title}
 				</div>
-				<!-- 
-				<Label class="flex items-center gap-2 text-sm">
-					<span>Unreads</span>
-					<Switch class="shadow-none" />
-				</Label>
-				 -->
+
 				<Button size="sm" href="/agents/new"><PlusIcon></PlusIcon>Create</Button>
 			</div>
 			<Sidebar.Input placeholder="Type to search..." bind:value={searchInput} />
@@ -143,18 +126,18 @@
 		<Sidebar.Content class="">
 			<Sidebar.Group class="px-0 ">
 				<Sidebar.GroupContent class=" mb-24">
-					{#each filteredAgents as agent (agent.email)}
+					{#each filteredAgents as agent (agent.name)}
 						<a
 							href="/agents/{agent.name}"
 							class="flex flex-col items-start gap-2 whitespace-nowrap border-b p-4 text-sm leading-tight last:border-b-0 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
 						>
 							<div class="flex w-full items-center gap-2">
-								<span>{agent.name}</span>{' '}
-								<span class="ml-auto text-xs">{agent.date}</span>
+								<span class="text-base font-medium">{agent.name}</span>
+								<span class="ml-auto text-xs text-muted-foreground">#{agent.id}</span>
 							</div>
-							<span class="font-medium">{agent.subject}</span>
+							<span class="font-medium">{agent.description}</span>
 							<span class="line-clamp-2 w-[260px] whitespace-break-spaces text-xs">
-								{agent.teaser}
+								{agent.description}
 							</span>
 						</a>
 					{/each}
