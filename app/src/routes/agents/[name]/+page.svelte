@@ -7,6 +7,10 @@
 	import { MATRIARCH_CLIENT } from '$lib/clients';
 	import type { schemas } from '$lib/types/matriarch.zod';
 	import { onMount } from 'svelte';
+	import { Checkbox } from '$lib/components/ui/checkbox';
+	import Label from '$lib/components/ui/label/label.svelte';
+	import { Switch } from '$lib/components/ui/switch';
+	import ActionCheatsheet from '$lib/components/app/actions-cheatsheet/action-cheatsheet.svelte';
 
 	let { data } = $props();
 
@@ -14,10 +18,18 @@
 	let input = $state<string>(null!);
 
 	type Message = {
-		origin: 'user' | 'assistant' | 'matriarch';
+		origin: 'user' | 'assistant';
 		content: string;
 	};
-	let messages: Message[] = $state([
+
+	type MatriarchMessage = {
+		origin: 'matriarch';
+		connection: string;
+		action: string;
+		result: string;
+	};
+
+	let messages: (Message | MatriarchMessage)[] = $state([
 		{
 			origin: 'user',
 			content: 'Hey! How do you do today?'
@@ -28,7 +40,9 @@
 		},
 		{
 			origin: 'matriarch',
-			content: 'Your Transaction went through'
+			connection: 'sonic',
+			action: 'transfer',
+			result: 'Your Transaction went through'
 		}
 	]);
 
@@ -54,8 +68,9 @@
 
 	let names = {
 		assistant: data.agent.name,
-		user: 'You'
-	};
+		user: 'You',
+		matriarch: 'matriarch'
+	} as const;
 
 	type Action = z.infer<typeof schemas.ActionRequest>;
 	async function requestAction(action: Action) {
@@ -72,6 +87,8 @@
 				}
 			}
 		);
+
+		return actionRequest;
 		console.dir(actionRequest.response);
 	}
 
@@ -84,6 +101,8 @@
 		});
 		*/
 	});
+
+	let isUserRequestingAction = $state(false);
 </script>
 
 <div class="grid h-full grid-cols-3 grid-rows-1">
@@ -94,25 +113,30 @@
 					<div class="flex flex-col gap-4 overflow-y-auto p-4">
 						{#each messages as message}
 							{@const displayedName = names[message.origin] || null}
-							<div
-								class="{message.origin === 'user' ? 'self-end text-right' : ''} {message.origin ===
-								'matriarch'
-									? 'w-full'
-									: 'w-fit'}"
-							>
-								{#if message.origin !== 'matriarch'}
-									<div class="mb-1 text-sm font-medium capitalize text-muted-foreground">
+							{#if message.origin === 'matriarch'}
+								<div>
+									<div class="mb-1 text-sm capitalize text-muted-foreground">
+										{message.connection} - {message.action}
+									</div>
+									<div
+										class="w-full
+									overflow-hidden rounded border bg-primary text-foreground"
+									>
+										<div class="px-4 py-2">
+											{message.result}
+										</div>
+									</div>
+								</div>
+							{:else}
+								<div class="{message.origin === 'user' ? 'self-end text-right' : ''} ">
+									<div class="mb-1 text-sm capitalize text-muted-foreground">
 										{displayedName}
 									</div>
-								{/if}
-								<div
-									class="rounded border p-4 {message.origin === 'matriarch'
-										? 'rounded-lg bg-primary text-foreground'
-										: ''}"
-								>
-									{message.content}
+									<div class="rounded border p-4">
+										{message.content}
+									</div>
 								</div>
-							</div>
+							{/if}
 						{/each}
 					</div>
 				</ScrollArea>
@@ -123,11 +147,40 @@
 			onsubmit={async (event) => {
 				event.preventDefault();
 
-				// TODO: set and send message
-				// TODO: store messages
 				if (!input || input.length === 0) {
 					return;
 				}
+
+				if (isUserRequestingAction) {
+					let splitInput = input.split(' ');
+					if (splitInput.length < 2) {
+						return;
+					}
+
+					const [connection, action, ...params] = splitInput;
+					// TODO: show we're querying
+					const actionResponse = await requestAction({
+						action,
+						connection,
+						params
+					});
+
+					//JSON.stringify(actionResponse.response)
+					messages.push({
+						origin: 'matriarch',
+						action: action,
+						connection: connection,
+						result: actionResponse.response
+						//content: `${connection} - ${action}: Received: ${actionResponse.response}`
+					});
+
+					input = '';
+					return;
+				}
+
+				// TODO: set and send message
+				// TODO: store messages
+				// Just chatting
 				messages.push({
 					origin: 'user',
 					content: input
@@ -160,7 +213,24 @@
 			/>
 			 -->
 
-			<ChatInput bind:input></ChatInput>
+			<!-- TODO: we want to also be able to just send an action via test to the Agent -->
+			<div
+				class="absolute bottom-6 flex w-full max-w-[calc(100dvw-32px)] flex-col space-y-2 md:max-w-[500px]"
+			>
+				<div class="flex items-center justify-end space-x-2">
+					<Label for="user-request-action" class="text-sm text-muted-foreground"
+						>Request Action</Label
+					>
+					<Switch id="user-request-action" bind:checked={isUserRequestingAction}></Switch>
+					{#if data.actions}
+						<ActionCheatsheet actions={data.actions}></ActionCheatsheet>
+					{/if}
+				</div>
+				<ChatInput
+					bind:input
+					placeholder={isUserRequestingAction ? 'connection action params' : 'Send a message...'}
+				></ChatInput>
+			</div>
 		</form>
 	</div>
 	<div class="flex max-h-[90svh] flex-col">

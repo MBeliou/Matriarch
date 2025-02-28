@@ -12,6 +12,9 @@ const ValidationError = z.object({ loc: z.array(z.union([z.string(), z.number()]
 const HTTPValidationError = z.object({ detail: z.array(ValidationError) }).partial().passthrough();
 const AgentUpdate = z.object({ name: z.union([z.string(), z.null()]), description: z.union([z.string(), z.null()]), bio: z.union([z.array(z.string()), z.null()]), traits: z.union([z.array(z.string()), z.null()]), examples: z.union([z.array(z.string()), z.null()]), example_accounts: z.union([z.array(z.string()), z.null()]), loop_delay: z.union([z.number(), z.null()]), use_time_based_weights: z.union([z.boolean(), z.null()]), time_based_multipliers: z.union([z.record(z.number()), z.null()]), config: z.union([z.array(z.object({}).partial().passthrough()), z.null()]), tasks: z.union([z.array(z.object({}).partial().passthrough()), z.null()]) }).partial().passthrough();
 const StatusResponse = z.object({ status: z.string() }).passthrough();
+const ActionParameter = z.object({ name: z.string(), required: z.boolean(), type: z.string(), description: z.string() }).passthrough();
+const Action = z.object({ name: z.string(), parameters: z.array(ActionParameter), description: z.string() }).passthrough();
+const AgentActionsResponse = z.object({ status: z.string(), response: z.record(z.record(Action)) }).passthrough();
 const ActionRequest = z.object({ connection: z.string(), action: z.string(), params: z.array(z.unknown()).optional().default([]) }).passthrough();
 const ActionResponse = z.object({ status: z.string(), response: z.unknown().optional() }).passthrough();
 const RunningStatusResponse = z.object({ running: z.boolean() }).passthrough();
@@ -25,6 +28,9 @@ export const schemas = {
 	HTTPValidationError,
 	AgentUpdate,
 	StatusResponse,
+	ActionParameter,
+	Action,
+	AgentActionsResponse,
 	ActionRequest,
 	ActionResponse,
 	RunningStatusResponse,
@@ -159,6 +165,27 @@ const endpoints = makeApi([
 			},
 		],
 		response: z.object({ status: z.string(), response: z.unknown().optional() }).passthrough(),
+		errors: [
+			{
+				status: 422,
+				description: `Validation Error`,
+				schema: HTTPValidationError
+			},
+		]
+	},
+	{
+		method: "get",
+		path: "/agents/:agent_name/actions",
+		alias: "get_actions_agents__agent_name__actions_get",
+		requestFormat: "json",
+		parameters: [
+			{
+				name: "agent_name",
+				type: "Path",
+				schema: z.string()
+			},
+		],
+		response: AgentActionsResponse,
 		errors: [
 			{
 				status: 422,
