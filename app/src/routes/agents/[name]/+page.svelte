@@ -168,7 +168,7 @@
 					//JSON.stringify(actionResponse.response)
 					messages.push({
 						origin: 'matriarch',
-						action: action,
+						action: `${action} (${params.join(', ')})`,
 						connection: connection,
 						result: actionResponse.response
 						//content: `${connection} - ${action}: Received: ${actionResponse.response}`

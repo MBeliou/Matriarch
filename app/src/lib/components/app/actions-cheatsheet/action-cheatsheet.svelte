@@ -8,10 +8,17 @@
 	let {
 		actions: availableActions
 	}: { actions: z.infer<typeof schemas.AgentActionsResponse.shape.response> } = $props();
+
+	const formatJson = (obj: Record<string, unknown>) => {
+		// Stringify with proper indentation (2 spaces)
+		const jsonString = JSON.stringify(obj, null, 2);
+		// Remove leading and trailing empty lines
+		return jsonString.replace(/^\s*[\r\n]/gm, '').replace(/[\r\n]\s*$/gm, '');
+	};
 </script>
 
 <Sheet.Root>
-	<Sheet.Trigger class={buttonVariants({ variant: 'outline', size: 'icon' })}>
+	<Sheet.Trigger type="button" class={buttonVariants({ variant: 'outline', size: 'icon' })}>
 		<ListIcon></ListIcon>
 	</Sheet.Trigger>
 	<Sheet.Content>
@@ -33,7 +40,7 @@
 								{connection}
 							</div>
 						</div>
-						<ul class="mt-2">
+						<ul class="mt-2 space-y-4">
 							{#each Object.entries(actions) as [action, content]}
 								<li>
 									<div>
@@ -44,11 +51,11 @@
 											{content.description}
 										</div>
 									</div>
-									<div>
-										<pre class="text-wrap text-white">
-                                            {JSON.stringify(content.parameters, null, 2)}
-
-                                        </pre>
+									<div class="mt-2 overflow-hidden rounded border">
+										<div class="border-b bg-muted p-2 text-xs">Parameters</div>
+										<code class="block whitespace-pre text-wrap text-sm text-white">
+											{JSON.stringify(content.parameters, null, 4)}
+										</code>
 									</div>
 								</li>
 							{/each}
