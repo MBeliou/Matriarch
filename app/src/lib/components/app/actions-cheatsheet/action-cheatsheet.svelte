@@ -26,7 +26,7 @@
 			<Sheet.Title>Action Cheatsheet</Sheet.Title>
 			<Sheet.Description>These are all the actions available for this agent.</Sheet.Description>
 		</Sheet.Header>
-		<div class="relative max-h-[100svh] overflow-y-auto pb-12">
+		<div class="relative max-h-[100svh] overflow-y-auto pb-32">
 			<ul class="space-y-2">
 				{#each Object.entries(availableActions) as [connection, actions]}
 					<li>

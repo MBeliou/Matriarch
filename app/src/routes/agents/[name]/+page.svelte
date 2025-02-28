@@ -102,48 +102,115 @@
 		*/
 	});
 
+	async function resumeChat(message: string) {
+		const previousMessages = messages
+			.filter((message) => message.origin !== 'matriarch')
+			.map((message) => {
+				return {
+					role: message.origin === 'user' ? 'user' : 'assistant',
+					content: message.content
+				};
+			});
+		previousMessages.push({
+			role: 'user',
+			content: message
+		});
+
+		return;
+		const actionRequest = await MATRIARCH_CLIENT.post(
+			'/agents/:agent_name/action',
+			{
+				connection: 'openai',
+				action: 'resume-chat',
+				params: [previousMessages]
+			},
+			{
+				params: {
+					agent_name: data.agent.name
+				}
+			}
+		);
+		console.dir(actionRequest.response);
+
+		messages.push({
+			origin: 'assistant',
+			content: actionRequest.response
+		});
+	}
+
 	let isUserRequestingAction = $state(false);
+
+	function setupAutoScroll(containerId: string) {
+		const container = document.getElementById(containerId);
+		
+		if (!container) {
+			console.error(`Container with ID "${containerId}" not found.`);
+			return;
+		}
+
+		// Create a MutationObserver to detect changes in the container
+		const observer = new MutationObserver(() => {
+			//container.scrollTop = container.scrollHeight;
+			container.scrollTo({
+				top: container.scrollHeight,
+				behavior: "smooth"
+			})
+		});
+
+		// Start observing the container for changes
+		observer.observe(container, {
+			childList: true, // observe direct children
+			subtree: true, // and lower descendants too
+			characterData: true // observe changes to text content
+		});
+
+		return observer; // return the observer so it can be disconnected if needed
+	}
+
+	onMount(() => {
+		const scroller = setupAutoScroll('scroller');
+
+		return () => {
+			scroller?.disconnect();
+		};
+	});
 </script>
 
 <div class="grid h-full grid-cols-3 grid-rows-1">
-	<div class="relative col-span-2 flex flex-col border-r">
-		<div class="flex-1">
-			<div class=" h-[94svh] overflow-y-auto pb-24">
-				<ScrollArea>
-					<div class="flex flex-col gap-4 overflow-y-auto p-4">
-						{#each messages as message}
-							{@const displayedName = names[message.origin] || null}
-							{#if message.origin === 'matriarch'}
-								<div>
-									<div class="mb-1 text-sm capitalize text-muted-foreground">
-										{message.connection} - {message.action}
-									</div>
-									<div
-										class="w-full
+	<div class="relative col-span-2 flex max-h-[90svh] flex-col border-r">
+		<div class="flex-1 overflow-y-auto pb-24" id="scroller">
+			<div class="flex flex-col gap-4 p-4">
+				{#each messages as message}
+					{@const displayedName = names[message.origin] || null}
+					{#if message.origin === 'matriarch'}
+						<div>
+							<div class="mb-1 text-sm capitalize text-muted-foreground">
+								{message.connection} - {message.action}
+							</div>
+							<div
+								class="w-full
 									overflow-hidden rounded border bg-primary text-foreground"
-									>
-										<div class="px-4 py-2">
-											{message.result}
-										</div>
-									</div>
+							>
+								<div class="px-4 py-2">
+									{message.result}
 								</div>
-							{:else}
-								<div class="{message.origin === 'user' ? 'self-end text-right' : ''} ">
-									<div class="mb-1 text-sm capitalize text-muted-foreground">
-										{displayedName}
-									</div>
-									<div class="rounded border p-4">
-										{message.content}
-									</div>
-								</div>
-							{/if}
-						{/each}
-					</div>
-				</ScrollArea>
+							</div>
+						</div>
+					{:else}
+						<div class="{message.origin === 'user' ? 'self-end text-right' : ''} max-w-[66%]">
+							<div class="mb-1 text-sm capitalize text-muted-foreground">
+								{displayedName}
+							</div>
+							<div class="break-before-all text-wrap break-all rounded border px-4 py-2">
+								{message.content}
+							</div>
+						</div>
+					{/if}
+				{/each}
 			</div>
 		</div>
 		<form
-			class="relative flex flex-col items-center gap-2"
+			class="relative flex min-h-[100px] flex-col items-center gap-2"
 			onsubmit={async (event) => {
 				event.preventDefault();
 
@@ -178,6 +245,8 @@
 					return;
 				}
 
+				let resumeChatPromise = resumeChat(input);
+
 				// TODO: set and send message
 				// TODO: store messages
 				// Just chatting
@@ -187,6 +256,7 @@
 				});
 
 				input = '';
+				await resumeChatPromise;
 				/*
 				event.preventDefault();
 
@@ -215,7 +285,7 @@
 
 			<!-- TODO: we want to also be able to just send an action via test to the Agent -->
 			<div
-				class="absolute bottom-6 flex w-full max-w-[calc(100dvw-32px)] flex-col space-y-2 md:max-w-[500px]"
+				class="absolute bottom-6 flex w-full max-w-[calc(100dvw-32px)] flex-col space-y-2 px-4 md:max-w-[500px]"
 			>
 				<div class="flex items-center justify-end space-x-2">
 					<Label for="user-request-action" class="text-sm text-muted-foreground"
