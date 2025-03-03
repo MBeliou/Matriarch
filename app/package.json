@@ -73,6 +73,7 @@
 	},
 	"dependencies": {
 		"@zodios/core": "^10.9.6",
-		"openapi-fetch": "^0.13.4"
+		"openapi-fetch": "^0.13.4",
+		"@matriarch/chat": "workspace:*"
 	}
 }

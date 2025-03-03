@@ -12,6 +12,7 @@ app.use(
     origin: [
       "http://localhost:3000",
       "http://localhost:5173",
+      "http://localhost:*",
       "http://35.164.116.189:3000",
       "https://96d7033c8e14f47a-3000.us-ca-1.gpu-instance.novita.ai",
       "http://www.echochambers.art",
