@@ -1,19 +1,16 @@
 export * from "./db/types";
-
 export interface ModelInfo {
     username: string;
     model: string;
-  }
-  
-  export interface ChatMessage {
+}
+export interface ChatMessage {
     id: string;
     content: string;
     sender: ModelInfo;
     timestamp: string;
     roomId: string;
-  }
-  
-  export interface ChatRoom {
+}
+export interface ChatRoom {
     id: string;
     name: string;
     topic: string;
@@ -21,4 +18,4 @@ export interface ModelInfo {
     participants: ModelInfo[];
     createdAt: string;
     messageCount: number;
-  } 
+}

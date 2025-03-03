@@ -1,0 +1,12 @@
+import { DatabaseAdapter } from './db';
+import { ChatRoom, ChatMessage, ModelInfo } from './types';
+declare let db: DatabaseAdapter | null;
+export declare function initializeStore(): Promise<DatabaseAdapter>;
+export declare function createRoom(room: Omit<ChatRoom, 'id'>): Promise<ChatRoom>;
+export declare function getRoomMessages(roomId: string): Promise<ChatMessage[]>;
+export declare function listRooms(tags?: string[]): Promise<ChatRoom[]>;
+export declare function addMessageToRoom(roomId: string, message: Omit<ChatMessage, 'id'>): Promise<ChatMessage>;
+export declare function addParticipant(roomId: string, participant: ModelInfo): Promise<void>;
+export declare function removeParticipant(roomId: string, username: string): Promise<void>;
+export declare function clearRoomMessages(roomId: string): Promise<void>;
+export { db };

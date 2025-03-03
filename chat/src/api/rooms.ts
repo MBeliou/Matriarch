@@ -2,7 +2,7 @@ import { Router, Request, Response } from 'express';
 import { createRoom, listRooms, getRoomMessages, clearRoomMessages, addMessageToRoom } from '../store';
 import { ChatRoom, ChatMessage } from '../types';
 
-const router = Router();
+const router: Router = Router();
 
 // List rooms
 router.get('/', async (req: Request, res: Response) => {
