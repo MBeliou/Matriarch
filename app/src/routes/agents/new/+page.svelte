@@ -9,6 +9,7 @@
 	import { browser } from '$app/environment';
 	import Switch from '$lib/components/ui/switch/switch.svelte';
 	import Label from '$lib/components/ui/label/label.svelte';
+	import { onMount } from 'svelte';
 
 	let { data }: { data: { form: SuperValidated<Infer<CreateAgentSchema>> } } = $props();
 
@@ -43,7 +44,7 @@
 			id: 'extroversion',
 			trait: 'Extroverted',
 			opposite: 'Introverted',
-			description: 'How the agent interacts with others and draws energy'
+			description: 'How the agent interacts with others'
 		},
 		{
 			id: 'openness',
@@ -82,6 +83,11 @@
 	$effect(() => {
 		$formData.traits = Object.values(selectedTraits);
 	});
+
+	onMount(() => {
+		$formData.examples = ['', '', ''];
+		$formData.example_accounts = ['', '', ''];
+	});
 </script>
 
 <div class="flex items-center justify-between border-b px-6 py-12">
@@ -92,6 +98,8 @@
 </div>
 <div class="p-6">
 	<form method="POST" use:enhance class="space-y-6">
+		<h3 class="text-xl font-medium">About your agent</h3>
+
 		<Form.Field {form} name="name">
 			<Form.Control>
 				{#snippet children({ props })}
@@ -116,23 +124,64 @@
 
 		<div>
 			<h3 class="text-sm font-semibold">Personality Traits</h3>
-			<div class="mt-4 space-y-2">
-				{#each personalityTraits as trait, i}
-					<div class="flex max-w-[300px] items-center [&>*]:w-1/3">
-						<Label for={trait.id}>{trait.opposite}</Label>
-						<div class="flex items-center justify-center">
-							<Switch
-								onCheckedChange={(checked) => {
-									selectedTraits[trait.id] = checked ? trait.trait : trait.opposite;
-								}}
-								checked={selectedTraits[trait.id] === trait.trait}
-								id={trait.id}
-							/>
-						</div>
+			<div class="mt-4 space-y-6">
+				<div class="grid grid-cols-2 gap-8">
+					{#each personalityTraits as trait, i}
+						<div>
+							<div class="flex max-w-[300px] items-center [&>*]:w-1/3">
+								<Label for={trait.id}>{trait.opposite}</Label>
+								<div class="flex items-center justify-center">
+									<Switch
+										onCheckedChange={(checked) => {
+											selectedTraits[trait.id] = checked ? trait.trait : trait.opposite;
+										}}
+										checked={selectedTraits[trait.id] === trait.trait}
+										id={trait.id}
+									/>
+								</div>
 
-						<Label for={trait.id}>{trait.trait}</Label>
-					</div>
-				{/each}
+								<Label for={trait.id}>{trait.trait}</Label>
+							</div>
+							<p class="text-muted-foreground mt-1 text-xs">{trait.description}</p>
+						</div>
+					{/each}
+				</div>
+			</div>
+		</div>
+		<div class="">
+			<h3 class="mt-12 border-b pb-2 text-xl font-medium">X (ex-Twitter)</h3>
+			<div class="mt-4 grid grid-cols-2 gap-4">
+				<div>
+					<h4 class="text-sm font-medium">Example Tweets</h4>
+
+					<ul class="mt-2 space-y-4">
+						{#each $formData.examples as example, i}
+							<Form.Field {form} name="examples">
+								<Form.Control>
+									{#snippet children({ props })}
+										<Form.Label>Example {i + 1}</Form.Label>
+										<Input {...props} bind:value={$formData.examples[i]}></Input>
+									{/snippet}
+								</Form.Control>
+							</Form.Field>
+						{/each}
+					</ul>
+				</div>
+				<div>
+					<h4 class="text-sm font-medium">Accounts to track</h4>
+					<ul class="mt-2 space-y-4">
+						{#each $formData.example_accounts as account, i}
+							<Form.Field {form} name="example_accounts">
+								<Form.Control>
+									{#snippet children({ props })}
+										<Form.Label>Account {i + 1}</Form.Label>
+										<Input {...props} bind:value={$formData.example_accounts[i]}></Input>
+									{/snippet}
+								</Form.Control>
+							</Form.Field>
+						{/each}
+					</ul>
+				</div>
 			</div>
 		</div>
 	</form>
