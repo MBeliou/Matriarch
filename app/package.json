@@ -72,8 +72,9 @@
 		"zod": "^3.24.2"
 	},
 	"dependencies": {
+		"@matriarch/chat": "workspace:*",
 		"@zodios/core": "^10.9.6",
 		"openapi-fetch": "^0.13.4",
-		"@matriarch/chat": "workspace:*"
+		"viem": "^2.23.6"
 	}
 }

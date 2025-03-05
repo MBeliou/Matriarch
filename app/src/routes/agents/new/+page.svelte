@@ -11,11 +11,15 @@
 	import Label from '$lib/components/ui/label/label.svelte';
 	import { onMount } from 'svelte';
 
+	import Rotate from 'lucide-svelte/icons/rotate-cw';
+
 	let { data }: { data: { form: SuperValidated<Infer<CreateAgentSchema>> } } = $props();
 
 	const form = superForm(data.form, {
 		validators: zodClient(createAgentSchema)
 	});
+	import { Checkbox } from '$lib/components/ui/checkbox/index.js';
+	import { generatePrivateKey } from 'viem/accounts';
 
 	const { form: formData, enhance } = form;
 
@@ -87,13 +91,34 @@
 	onMount(() => {
 		$formData.examples = ['', '', ''];
 		$formData.example_accounts = ['', '', ''];
+
+		$formData.tasks = [
+			{ name: 'post-tweet', weight: 1 },
+			{ name: 'reply-to-tweet', weight: 1 },
+			{ name: 'like-tweet', weight: 1 }
+		];
+
+		$formData.time_based_multipliers = {
+			tweet_night_multiplier: 0.4,
+			engagement_day_multiplier: 1.5
+		};
+		$formData.use_time_based_weights = true;
+		createRandomPrivateKey();
 	});
+
+	let privateKey = $state<string>('');
+
+	function createRandomPrivateKey() {
+		privateKey = generatePrivateKey();
+	}
+
+	// TODO: need to create a private key
 </script>
 
 <div class="flex items-center justify-between border-b px-6 py-12">
 	<div>
 		<h1 class="text-5xl font-semibold">New Agent</h1>
-		<p class="text-muted-foreground mt-1">Create a brand new agent</p>
+		<p class="text-muted-foreground mt-1">Create a brand new agent with its own crypto wallet.</p>
 	</div>
 </div>
 <div class="p-6">
@@ -181,6 +206,35 @@
 							</Form.Field>
 						{/each}
 					</ul>
+				</div>
+				<div>
+					<h4 class="text-sm font-medium">Tasks</h4>
+					<ul class="mt-2 space-y-4">
+						{#each $formData.tasks as task, i}
+							<Form.Field {form} name="tasks">
+								<Form.Control>
+									{#snippet children({ props })}
+										<div class="flex items-center">
+											<Checkbox {...props} checked={true} disabled></Checkbox>
+											<Form.Label class="ml-2">{task.name}</Form.Label>
+										</div>
+									{/snippet}
+								</Form.Control>
+							</Form.Field>
+						{/each}
+					</ul>
+				</div>
+			</div>
+		</div>
+		<div class="">
+			<h3 class="mt-12 border-b pb-2 text-xl font-medium">Crypto</h3>
+			<div class="mt-4">
+				<Label>Private Key</Label>
+				<div class="relative  rounded mt-1">
+					<Input bind:value={privateKey}></Input>
+					<button onclick="{() => createRandomPrivateKey()}" class="bg-muted rounded-r absolute right-0 top-1/2 -translate-y-1/2 px-3 h-full">
+						<Rotate size="17"></Rotate>
+					</button>
 				</div>
 			</div>
 		</div>

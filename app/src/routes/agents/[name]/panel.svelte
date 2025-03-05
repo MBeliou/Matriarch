@@ -12,7 +12,7 @@
 	let { agent }: PanelProps = $props();
 </script>
 
-<div class=" divide-y overflow-y-auto [&>*]:p-4">
+<div class="space-y-2 divide-y overflow-y-auto [&>*]:p-4">
 	<div class="flex items-center">
 		<Avatar.Root>
 			<Avatar.Image src="/orinfumo.png" alt="{agent.name} avatar" />
