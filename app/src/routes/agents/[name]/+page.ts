@@ -3,6 +3,8 @@ import type { z } from 'zod';
 import type { PageLoad } from './$types';
 import type { schemas } from '$lib/types/matriarch.zod';
 
+export const prerender = false;
+export const ssr = false;
 export const load = (async ({ params }) => {
 	// Make sure the agent is actually running
 	try {

@@ -2,7 +2,7 @@
 	import Robot from 'lucide-svelte/icons/bot-message-square';
 	import MessagesSquare from 'lucide-svelte/icons/messages-square';
 	import PlusIcon from 'lucide-svelte/icons/plus';
-
+	import GithubIcon from 'lucide-svelte/icons/github';
 	// This is sample data
 	const data = {
 		user: {
@@ -37,6 +37,7 @@
 	import Button from './ui/button/button.svelte';
 	import type { z } from 'zod';
 	import type { schemas } from '$lib/types/matriarch.zod';
+	import SidebarMenuItem from './ui/sidebar/sidebar-menu-item.svelte';
 
 	type Agent = z.infer<(typeof schemas)['AgentResponse']>;
 	let {
@@ -76,7 +77,7 @@
 						{#snippet child({ props })}
 							<a href="/" {...props}>
 								<div
-									class="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground"
+									class="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg"
 								>
 									<Command class="size-4" />
 								</div>
@@ -105,8 +106,8 @@
 				</Sidebar.GroupContent>
 			</Sidebar.Group>
 		</Sidebar.Content>
-		<Sidebar.Footer>
-			<NavUser user={data.user} />
+		<Sidebar.Footer class="flex flex-col items-center ">
+			<a href="https://github.com/MBeliou/ZerePy"><GithubIcon size={18}></GithubIcon></a>
 		</Sidebar.Footer>
 	</Sidebar.Root>
 
@@ -115,7 +116,7 @@
 	<Sidebar.Root collapsible="none" class="relative hidden flex-1 md:flex">
 		<Sidebar.Header class="gap-3.5 border-b p-4">
 			<div class="flex w-full items-center justify-between">
-				<div class="text-base font-medium text-foreground">
+				<div class="text-foreground text-base font-medium">
 					{activeItem.title}
 				</div>
 
@@ -129,11 +130,11 @@
 					{#each filteredAgents as agent (agent.name)}
 						<a
 							href="/agents/{agent.name}"
-							class="flex flex-col items-start gap-2 whitespace-nowrap border-b p-4 text-sm leading-tight last:border-b-0 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+							class="hover:bg-sidebar-accent hover:text-sidebar-accent-foreground flex flex-col items-start gap-2 whitespace-nowrap border-b p-4 text-sm leading-tight last:border-b-0"
 						>
 							<div class="flex w-full items-center gap-2">
 								<span class="text-base font-medium">{agent.name}</span>
-								<span class="ml-auto text-xs text-muted-foreground">#{agent.id}</span>
+								<span class="text-muted-foreground ml-auto text-xs">#{agent.id}</span>
 							</div>
 							<span class="font-medium">{agent.description}</span>
 							<span class="line-clamp-2 w-[260px] whitespace-break-spaces text-xs">

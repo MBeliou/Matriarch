@@ -11,6 +11,7 @@
 	import { onMount } from 'svelte';
 	import { z } from 'zod';
 	import Panel, { type PanelProps } from './panel.svelte';
+	import Spinner from 'lucide-svelte/icons/loader-circle';
 
 	let { data } = $props();
 
@@ -28,7 +29,7 @@
 		action: string;
 		result: string;
 	};
-
+	/*
 	let messages: (Message | MatriarchMessage)[] = $state([
 		{
 			origin: 'user',
@@ -45,7 +46,7 @@
 			result: 'Your Transaction went through'
 		}
 	]);
-
+*/
 	/*
 	{
   "connection": "openai",
@@ -89,25 +90,14 @@
 		);
 
 		return actionRequest;
-		console.dir(actionRequest.response);
 	}
 
-	let localStorage;
-	if (browser) {
-		localStorage = new LocalStorage(`${data.agent.name}`);
-	}
-	onMount(() => {
-		/*
-		requestAction({
-			action: 'get-balance',
-			connection: 'sonic',
-			params: []
-		});
-		*/
-	});
+	let chatStorage = $derived(
+		new LocalStorage<(Message | MatriarchMessage)[]>(`${data.agent.name}_chat`, [])
+	);
 
 	async function resumeChat(message: string) {
-		const previousMessages = messages
+		const previousMessages = chatStorage.content
 			.filter((message) => message.origin !== 'matriarch')
 			.map((message) => {
 				return {
@@ -134,11 +124,13 @@
 			}
 		);
 
-		messages.push({
+		chatStorage.content.push({
 			origin: 'assistant',
 			content: actionRequest.response as string
 		});
 	}
+
+	let isWaitingOnCompletion = $state(false);
 
 	let isUserRequestingAction = $state(false);
 
@@ -182,108 +174,102 @@
 	<div class="relative col-span-2 flex max-h-[90svh] flex-col border-r">
 		<div class="flex-1 overflow-y-auto pb-24" id="scroller">
 			<div class="flex flex-col gap-4 p-4">
-				{#each messages as message}
-					{@const displayedName = names[message.origin] || null}
-					{#if message.origin === 'matriarch'}
-						<div>
-							<div class="text-muted-foreground mb-1 text-sm capitalize">
-								{message.connection} - {message.action}
-							</div>
-							<div
-								class="bg-primary
+				{#if chatStorage.content.length > 0}
+					{#each chatStorage.content as message}
+						{@const displayedName = names[message.origin] || null}
+						{#if message.origin === 'matriarch'}
+							<div>
+								<div class="text-muted-foreground mb-1 text-sm capitalize">
+									{message.connection} - {message.action}
+								</div>
+								<div
+									class="bg-primary
 									text-foreground w-full overflow-hidden rounded border"
-							>
-								<div class="px-4 py-2">
-									{message.result}
+								>
+									<div class="px-4 py-2">
+										{message.result}
+									</div>
 								</div>
 							</div>
-						</div>
-					{:else}
-						<div class="{message.origin === 'user' ? 'self-end text-right' : ''} max-w-[66%]">
-							<div class="text-muted-foreground mb-1 text-sm capitalize">
-								{displayedName}
+						{:else}
+							<div class="{message.origin === 'user' ? 'self-end text-right' : ''} max-w-[66%]">
+								<div class="text-muted-foreground mb-1 text-sm capitalize">
+									{displayedName}
+								</div>
+								<div class=" text-pretty rounded border px-4 py-2">
+									{message.content}
+								</div>
 							</div>
-							<div class=" text-pretty rounded border px-4 py-2">
-								{message.content}
-							</div>
-						</div>
-					{/if}
-				{/each}
+						{/if}
+					{/each}
+				{:else}
+					<div class="text-center mt-24 font-medium text-lg">
+						Start chatting with {data.agent.name}!
+						<span class="block mt-1 text-5xl">
+							👋
+						</span>
+					</div>
+				{/if}
+				{#if isWaitingOnCompletion}
+					<div>
+						<Spinner class="animate-spin"></Spinner>
+					</div>
+				{/if}
 			</div>
 		</div>
 		<form
 			class="relative flex min-h-[100px] flex-col items-center gap-2"
 			onsubmit={async (event) => {
 				event.preventDefault();
+				isWaitingOnCompletion = true;
 
-				if (!input || input.length === 0) {
-					return;
-				}
-
-				if (isUserRequestingAction) {
-					let splitInput = input.split(' ');
-					if (splitInput.length < 2) {
+				try {
+					if (!input || input.length === 0) {
 						return;
 					}
 
-					const [connection, action, ...params] = splitInput;
-					// TODO: show we're querying
-					const actionResponse = await requestAction({
-						action,
-						connection,
-						params
-					});
+					if (isUserRequestingAction) {
+						let splitInput = input.split(' ');
+						if (splitInput.length < 2) {
+							return;
+						}
 
-					messages.push({
-						origin: 'matriarch',
-						action: `${action} (${params.join(', ')})`,
-						connection: connection,
-						result: actionResponse.response as string
+						const [connection, action, ...params] = splitInput;
+
+						// TODO: show we're querying
+						const actionResponse = await requestAction({
+							action,
+							connection,
+							params
+						});
+
+						chatStorage.content.push({
+							origin: 'matriarch',
+							action: `${action} (${params.join(', ')})`,
+							connection: connection,
+							result: actionResponse.response as string
+						});
+
+						input = '';
+						return;
+					}
+
+					let resumeChatPromise = resumeChat(input);
+
+					chatStorage.content.push({
+						origin: 'user',
+						content: input
 					});
 
 					input = '';
-					return;
+					await resumeChatPromise;
+				} catch (error) {
+					console.error(error);
+				} finally {
+					isWaitingOnCompletion = false;
 				}
-
-				let resumeChatPromise = resumeChat(input);
-
-				// TODO: set and send message
-				// TODO: store messages
-				// Just chatting
-				messages.push({
-					origin: 'user',
-					content: input
-				});
-
-				input = '';
-				await resumeChatPromise;
-				/*
-				event.preventDefault();
-
-				setMessages((messages) => [
-					...messages,
-					<Message key={messages.length} role="user" content={input} />
-				]);
-				setInput('');
-
-				const response: ReactNode = await sendMessage(input);
-				setMessages((messages) => [...messages, response]);*/
 			}}
 		>
-			<!-- 
-			<input
-				bind:this={inputRef}
-				class="absolute bottom-6 w-full max-w-[calc(100dvw-32px)] rounded-md bg-muted px-2 py-1.5 outline-none md:max-w-[500px]"
-				placeholder="Send a message..."
-				value={input}
-				type="text"
-				onchange={(event) => {
-					input = (event.target as HTMLInputElement).value;
-				}}
-			/>
-			 -->
-
-			<!-- TODO: we want to also be able to just send an action via test to the Agent -->
 			<div
 				class="absolute bottom-6 flex w-full max-w-[calc(100dvw-32px)] flex-col space-y-2 px-4 md:max-w-[500px]"
 			>
@@ -317,7 +303,7 @@
 					onSubmit={() => {
 						console.log('submit these');
 					}}
-				></Transfer>qu
+				></Transfer>
 			</div>
 		</div>
 	</div>

@@ -14,7 +14,7 @@
 	<div>
 		<Button href="/agents/new">
 			<span>Create Agent</span>
-            <Plus></Plus>
+			<Plus></Plus>
 		</Button>
 	</div>
 </div>
@@ -28,21 +28,23 @@
 
 			<div class="p-2">
 				<div class=" text-muted-foreground text-sm">Connections</div>
-				<div class="mt-2 grid h-[200px] grid-cols-2 gap-2 overflow-y-auto">
-					{#each configs as config}
-						<div class="flex items-center space-x-2 capitalize">
-							<div class="bg-muted text-muted-foreground rounded-full border p-1">
-								<Check size={16}></Check>
+				<div class="mt-2 h-[200px] overflow-y-auto">
+					<div class="flex flex-wrap items-start gap-4">
+						{#each configs as config}
+							<div class="flex h-fit w-1/3 items-center space-x-2 capitalize">
+								<div class="bg-muted text-muted-foreground rounded-full border p-1">
+									<Check size={16}></Check>
+								</div>
+								<span>
+									{config}
+								</span>
 							</div>
-							<span>
-								{config}
-							</span>
-						</div>
-					{/each}
+						{/each}
+					</div>
 				</div>
 			</div>
 
-			<Button class="w-full">Interact with {agent.name}</Button>
+			<Button class="w-full" href="/agents/{agent.name}">Interact with {agent.name}</Button>
 		</li>
 	{/each}
 </ul>
