@@ -12,6 +12,8 @@
 	import { z } from 'zod';
 	import Panel, { type PanelProps } from './panel.svelte';
 	import Spinner from 'lucide-svelte/icons/loader-circle';
+	import { Button } from '$lib/components/ui/button';
+	import LinkIcon from 'lucide-svelte/icons/link';
 
 	let { data } = $props();
 
@@ -168,6 +170,30 @@
 			scroller?.disconnect();
 		};
 	});
+
+	function parseUrlFromString(text: string) {
+		const urlRegex =
+			/https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)/i;
+
+		const match = text.match(urlRegex);
+
+		// No URL found, return original text with null URL
+		if (!match) {
+			return {
+				content: text,
+				url: null
+			};
+		}
+
+		const url = match[0];
+
+		const textWithoutUrl = text.replace(url, '').trim();
+
+		return {
+			content: textWithoutUrl,
+			url: url
+		};
+	}
 </script>
 
 <div class="grid h-full grid-cols-3 grid-rows-1">
@@ -178,6 +204,7 @@
 					{#each chatStorage.content as message}
 						{@const displayedName = names[message.origin] || null}
 						{#if message.origin === 'matriarch'}
+							{@const reworkedResult = parseUrlFromString(message?.result || '')}
 							<div>
 								<div class="text-muted-foreground mb-1 text-sm capitalize">
 									{message.connection} - {message.action}
@@ -186,8 +213,11 @@
 									class="bg-primary
 									text-foreground w-full overflow-hidden rounded border"
 								>
-									<div class="px-4 py-2">
-										{message.result}
+									<div class="px-4 py-2  ">
+										{reworkedResult.content}
+										{#if reworkedResult.url}
+											<a href={reworkedResult.url} class="inline-block ml-2 hover:bg-white hover:text-primary p-0.5 duration-500 rounded" target="_blank"><LinkIcon size="16"></LinkIcon></a>
+										{/if}
 									</div>
 								</div>
 							</div>
@@ -196,18 +226,16 @@
 								<div class="text-muted-foreground mb-1 text-sm capitalize">
 									{displayedName}
 								</div>
-								<div class=" text-pretty rounded border px-4 py-2">
+								<div class="text-pretty rounded border px-4 py-2">
 									{message.content}
 								</div>
 							</div>
 						{/if}
 					{/each}
 				{:else}
-					<div class="text-center mt-24 font-medium text-lg">
+					<div class="mt-24 text-center text-lg font-medium">
 						Start chatting with {data.agent.name}!
-						<span class="block mt-1 text-5xl">
-							👋
-						</span>
+						<span class="mt-1 block text-5xl"> 👋 </span>
 					</div>
 				{/if}
 				{#if isWaitingOnCompletion}
