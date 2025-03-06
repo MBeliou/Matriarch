@@ -1,16 +1,16 @@
 <script lang="ts">
-	import ChatInput from '$lib/components/app/chat-input/ChatInput.svelte';
-	import { unknown, z } from 'zod';
-	import Panel, { type PanelProps } from './panel.svelte';
-	import Transfer from '$lib/components/app/actions/transfer.svelte';
-	import { ScrollArea } from '$lib/components/ui/scroll-area/index.js';
+	import { browser } from '$app/environment';
 	import { MATRIARCH_CLIENT } from '$lib/clients';
-	import type { schemas } from '$lib/types/matriarch.zod';
-	import { onMount } from 'svelte';
-	import { Checkbox } from '$lib/components/ui/checkbox';
+	import ActionCheatsheet from '$lib/components/app/actions-cheatsheet/action-cheatsheet.svelte';
+	import Transfer from '$lib/components/app/actions/transfer.svelte';
+	import ChatInput from '$lib/components/app/chat-input/ChatInput.svelte';
 	import Label from '$lib/components/ui/label/label.svelte';
 	import { Switch } from '$lib/components/ui/switch';
-	import ActionCheatsheet from '$lib/components/app/actions-cheatsheet/action-cheatsheet.svelte';
+	import { LocalStorage } from '$lib/services/localstorage.svelte';
+	import type { schemas } from '$lib/types/matriarch.zod';
+	import { onMount } from 'svelte';
+	import { z } from 'zod';
+	import Panel, { type PanelProps } from './panel.svelte';
 
 	let { data } = $props();
 
@@ -92,6 +92,10 @@
 		console.dir(actionRequest.response);
 	}
 
+	let localStorage;
+	if (browser) {
+		localStorage = new LocalStorage(`${data.agent.name}`);
+	}
 	onMount(() => {
 		/*
 		requestAction({
@@ -116,7 +120,6 @@
 			content: message
 		});
 
-		return;
 		const actionRequest = await MATRIARCH_CLIENT.post(
 			'/agents/:agent_name/action',
 			{
@@ -130,11 +133,10 @@
 				}
 			}
 		);
-		console.dir(actionRequest.response);
 
 		messages.push({
 			origin: 'assistant',
-			content: actionRequest.response
+			content: actionRequest.response as string
 		});
 	}
 
@@ -142,7 +144,7 @@
 
 	function setupAutoScroll(containerId: string) {
 		const container = document.getElementById(containerId);
-		
+
 		if (!container) {
 			console.error(`Container with ID "${containerId}" not found.`);
 			return;
@@ -153,8 +155,8 @@
 			//container.scrollTop = container.scrollHeight;
 			container.scrollTo({
 				top: container.scrollHeight,
-				behavior: "smooth"
-			})
+				behavior: 'smooth'
+			});
 		});
 
 		// Start observing the container for changes
@@ -184,12 +186,12 @@
 					{@const displayedName = names[message.origin] || null}
 					{#if message.origin === 'matriarch'}
 						<div>
-							<div class="mb-1 text-sm capitalize text-muted-foreground">
+							<div class="text-muted-foreground mb-1 text-sm capitalize">
 								{message.connection} - {message.action}
 							</div>
 							<div
-								class="w-full
-									overflow-hidden rounded border bg-primary text-foreground"
+								class="bg-primary
+									text-foreground w-full overflow-hidden rounded border"
 							>
 								<div class="px-4 py-2">
 									{message.result}
@@ -198,10 +200,10 @@
 						</div>
 					{:else}
 						<div class="{message.origin === 'user' ? 'self-end text-right' : ''} max-w-[66%]">
-							<div class="mb-1 text-sm capitalize text-muted-foreground">
+							<div class="text-muted-foreground mb-1 text-sm capitalize">
 								{displayedName}
 							</div>
-							<div class="break-before-all text-wrap break-all rounded border px-4 py-2">
+							<div class=" text-pretty rounded border px-4 py-2">
 								{message.content}
 							</div>
 						</div>
@@ -232,13 +234,11 @@
 						params
 					});
 
-					//JSON.stringify(actionResponse.response)
 					messages.push({
 						origin: 'matriarch',
 						action: `${action} (${params.join(', ')})`,
 						connection: connection,
-						result: actionResponse.response
-						//content: `${connection} - ${action}: Received: ${actionResponse.response}`
+						result: actionResponse.response as string
 					});
 
 					input = '';
@@ -288,7 +288,7 @@
 				class="absolute bottom-6 flex w-full max-w-[calc(100dvw-32px)] flex-col space-y-2 px-4 md:max-w-[500px]"
 			>
 				<div class="flex items-center justify-end space-x-2">
-					<Label for="user-request-action" class="text-sm text-muted-foreground"
+					<Label for="user-request-action" class="text-muted-foreground text-sm"
 						>Request Action</Label
 					>
 					<Switch id="user-request-action" bind:checked={isUserRequestingAction}></Switch>
@@ -307,18 +307,17 @@
 		<div class="relative flex flex-1 flex-col overflow-y-hidden border-b">
 			<Panel agent={data.agent as unknown as PanelProps['agent']}></Panel>
 			<div
-				class="pointer-events-none absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-background/60"
+				class="to-background/60 pointer-events-none absolute inset-0 bg-gradient-to-b from-transparent via-transparent"
 			></div>
 		</div>
 		<div class="p-2 xl:p-4">
 			<h2 class="text-xl font-medium">Actions</h2>
 			<div class=" mt-2 flex flex-wrap gap-4">
-				<Transfer></Transfer>
-				<Transfer></Transfer>
-				<Transfer></Transfer>
-
-				<Transfer></Transfer>
-				<Transfer></Transfer>
+				<Transfer
+					onSubmit={() => {
+						console.log('submit these');
+					}}
+				></Transfer>qu
 			</div>
 		</div>
 	</div>
