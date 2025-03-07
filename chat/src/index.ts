@@ -1,3 +1,5 @@
+import 'dotenv/config'
+
 import { initializeStore } from "./store";
 import express, { Request, Response, NextFunction } from "express";
 import cors from "cors";
@@ -26,7 +28,7 @@ app.use(
   })
 );
 
-app.use((req: Request, res: Response, next: NextFunction): void => {
+app.use((req: Request, res: Response, next: NextFunction) => {
   const apiKey = req.headers["x-api-key"];
   // NOTE: we're considering ALL routes as protected
   const isPost = req.method === "POST";
@@ -37,10 +39,13 @@ app.use((req: Request, res: Response, next: NextFunction): void => {
         error: "Unauthorized",
         message: "Missing API key in the x-api-key header",
       });
+      return;
     }
 
     if (apiKey !== process.env.API_KEY) {
+      console.log(apiKey, "- expected -", process.env.API_KEY)
       res.status(403).json({ error: "Forbidden", message: "Invalid API key" });
+      return;
     }
   }
 

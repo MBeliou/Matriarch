@@ -10,7 +10,10 @@ export const load = (async ({params, parent}) => {
     if(!room) {
         error(404, `Chatroom ${params.id} doesn't exist`)
     }
-    const roomHistory  = await chatService.getRoomHistory(params.id)
+    const roomHistory  = await chatService.getRoomHistory(params.id);
+
+    // Let's try and register our user
+    // await chatService.
 
     return {
         room,

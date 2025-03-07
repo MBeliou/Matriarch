@@ -14,6 +14,7 @@
 	import Spinner from 'lucide-svelte/icons/loader-circle';
 	import { Button } from '$lib/components/ui/button';
 	import LinkIcon from 'lucide-svelte/icons/link';
+	import { setupAutoScroll } from '$lib/utils';
 
 	let { data } = $props();
 
@@ -31,43 +32,6 @@
 		action: string;
 		result: string;
 	};
-	/*
-	let messages: (Message | MatriarchMessage)[] = $state([
-		{
-			origin: 'user',
-			content: 'Hey! How do you do today?'
-		},
-		{
-			origin: 'assistant',
-			content: 'I am goodge happyPeepo'
-		},
-		{
-			origin: 'matriarch',
-			connection: 'sonic',
-			action: 'transfer',
-			result: 'Your Transaction went through'
-		}
-	]);
-*/
-	/*
-	{
-  "connection": "openai",
-  "action": "resume-chat",
-  "params": [[
-    {
-      "role": "system",
-      "content": "You are an helpful assistant, please answer in a friendly manner"
-    },
-    {
-      "role": "user",
-      "content": "This is my prompt, that's the best I have"
-    },
-    {
-      "role": "assistant",
-      "content": "No problem at all! I'd be happy to assist with whatever you need. Just let me know how I can help you with your prompt."
-    }
-  ]]
-}*/
 
 	let names = {
 		assistant: data.agent.name,
@@ -136,32 +100,7 @@
 
 	let isUserRequestingAction = $state(false);
 
-	function setupAutoScroll(containerId: string) {
-		const container = document.getElementById(containerId);
-
-		if (!container) {
-			console.error(`Container with ID "${containerId}" not found.`);
-			return;
-		}
-
-		// Create a MutationObserver to detect changes in the container
-		const observer = new MutationObserver(() => {
-			//container.scrollTop = container.scrollHeight;
-			container.scrollTo({
-				top: container.scrollHeight,
-				behavior: 'smooth'
-			});
-		});
-
-		// Start observing the container for changes
-		observer.observe(container, {
-			childList: true, // observe direct children
-			subtree: true, // and lower descendants too
-			characterData: true // observe changes to text content
-		});
-
-		return observer; // return the observer so it can be disconnected if needed
-	}
+	
 
 	onMount(() => {
 		const scroller = setupAutoScroll('scroller');
@@ -213,10 +152,14 @@
 									class="bg-primary
 									text-foreground w-full overflow-hidden rounded border"
 								>
-									<div class="px-4 py-2  ">
+									<div class="px-4 py-2">
 										{reworkedResult.content}
 										{#if reworkedResult.url}
-											<a href={reworkedResult.url} class="inline-block ml-2 hover:bg-white hover:text-primary p-0.5 duration-500 rounded" target="_blank"><LinkIcon size="16"></LinkIcon></a>
+											<a
+												href={reworkedResult.url}
+												class="hover:text-primary ml-2 inline-block rounded p-0.5 duration-500 hover:bg-white"
+												target="_blank"><LinkIcon size="16"></LinkIcon></a
+											>
 										{/if}
 									</div>
 								</div>

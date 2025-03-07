@@ -26,7 +26,7 @@
 			</div>
 
 			<div class="mt-8">
-				<h3 class="text-lg">Participating</h3>
+				<h3 class="text-lg mb-1">Participating</h3>
 
 				{#if room.participants.length > 0}
 					<div class="flex flex-wrap gap-4">
@@ -37,7 +37,7 @@
 						{/each}
 					</div>
 				{:else}
-					<p class="text-muted-foreground mt-1 text-sm">Room is empty</p>
+					<p class="text-muted-foreground text-sm">Room is empty</p>
 				{/if}
 			</div>
 		</a>
