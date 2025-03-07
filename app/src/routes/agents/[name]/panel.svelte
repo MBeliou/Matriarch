@@ -1,8 +1,8 @@
 <script lang="ts" module>
 	import type { schemas } from '$lib/types/matriarch.zod';
-
+	import type { z } from 'zod';
 	export type PanelProps = {
-		agent: typeof schemas.AgentResponse.shape;
+		agent: z.infer<typeof schemas.AgentResponse>;
 	};
 </script>
 
@@ -22,7 +22,7 @@
 			<h1 class="text-xl">
 				{agent.name}
 			</h1>
-			<p class="text-sm text-muted-foreground">Agent #{agent.id}</p>
+			<p class="text-muted-foreground text-sm">Agent #{agent.id}</p>
 		</div>
 	</div>
 
@@ -34,6 +34,15 @@
 	</div>
 
 	<div>
+		<h2>Traits</h2>
+		<ul class="grid grid-cols-2 gap-2 mt-1">
+			{#each agent.traits as trait}
+				<li>{trait}</li>
+			{/each}
+		</ul>
+	</div>
+
+	<div>
 		<h2>Biography</h2>
 		<p>
 			{agent.bio || 'No biography provided'}
@@ -42,7 +51,7 @@
 
 	<div>
 		<h2>Integrations</h2>
-		<div class="mt-4 space-y-4">
+		<div class="mt-4 space-y-4 pb-24">
 			<!-- @ts-expect-error zod and typescript are being a bit too overbearing here -->
 			{#each [...agent.config] as config}
 				<div class="border-b pb-4">
@@ -50,22 +59,21 @@
 					<ul class="mt-2 space-y-2">
 						{#each Object.entries(config) as [entry, value]}
 							<li class="text-sm">
-								<div class="capitalize text-muted-foreground">
+								<div class="text-muted-foreground capitalize">
 									{entry}
 								</div>
 
 								<div class="overflow-hidden text-ellipsis text-right">
 									<div class="">
-                                        {#if Array.isArray(value)}
-                                            {#each value as subValue}
-                                            <div>
-                                                {JSON.stringify(subValue)}
-
-                                            </div>
-                                            {/each}
-                                        {:else}
-										{value || 'No value provided'}
-                                        {/if}
+										{#if Array.isArray(value)}
+											{#each value as subValue}
+												<div>
+													{JSON.stringify(subValue)}
+												</div>
+											{/each}
+										{:else}
+											{value || 'No value provided'}
+										{/if}
 									</div>
 								</div>
 							</li>
@@ -81,6 +89,6 @@
 
 <style lang="postcss">
 	h2 {
-		@apply text-sm font-medium text-muted-foreground;
+		@apply text-muted-foreground text-sm font-medium;
 	}
 </style>

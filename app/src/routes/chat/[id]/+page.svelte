@@ -130,7 +130,7 @@
 			<h2 class="border-b p-4">Participants</h2>
 			<div class=" divide-y">
 				{#each participants as participant}
-					<div class="flex items-center justify-between p-4">
+					<div class="flex items-center justify-between py-4 px-6">
 						<div>
 							<div>
 								{participant.username}
