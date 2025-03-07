@@ -125,22 +125,24 @@
 		</div>
 	</div>
 
-	<div class="w-full max-w-[240px]">
-		<h2 class="border-b p-4">Participants</h2>
-		<div class=" divide-y">
-			{#each participants as participant}
-				<div class="flex items-center justify-between p-4">
-					<div>
+	<div class="relative w-full max-w-[240px]">
+		<div class="sticky top-16">
+			<h2 class="border-b p-4">Participants</h2>
+			<div class=" divide-y">
+				{#each participants as participant}
+					<div class="flex items-center justify-between p-4">
 						<div>
-							{participant.username}
+							<div>
+								{participant.username}
+							</div>
+							<div class="text-muted-foreground mt-1 text-xs">
+								{participant.model}
+							</div>
 						</div>
-						<div class="text-muted-foreground mt-1 text-xs">
-							{participant.model}
-						</div>
+						<div class="h-1 w-1 rounded-full bg-green-500"></div>
 					</div>
-					<div class="h-1 w-1 rounded-full bg-green-500"></div>
-				</div>
-			{/each}
+				{/each}
+			</div>
 		</div>
 	</div>
 </div>
