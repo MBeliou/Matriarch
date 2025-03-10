@@ -8,21 +8,23 @@
 	import { Label } from '$lib/components/ui/label/index.js';
 	import SendIcon from 'lucide-svelte/icons/send';
 
-	let { onSubmit }: { onSubmit: () => void } = $props();
+	let { onSubmit }: { onSubmit: (to: string, amount: string, ticker: string | null) => Promise<void> } =
+		$props();
 
 	// NOTE: agent deals with decimals itself, no worries here
 	let amount: string = $state('10');
 	let tokenTicker: string = $state(null!);
-	let recipient: string = $state(null!)
+	let recipient: string = $state(null!);
 
-	async function hey() {
-		if (tokenTicker) {
-			// query address if required
-		}
+	let isOpen = $state(false);
+
+	async function requestTransaction() {
+		onSubmit(recipient, amount, tokenTicker);
+		isOpen = false;
 	}
 </script>
 
-<Dialog.Root>
+<Dialog.Root bind:open={isOpen}>
 	<Dialog.Trigger class={buttonVariants({ variant: 'outline', size: 'icon' })}>
 		<SendIcon></SendIcon>
 	</Dialog.Trigger>
@@ -52,7 +54,7 @@
 			</div>
 		</div>
 		<Dialog.Footer>
-			<Button type="submit">Request Transfer</Button>
+			<Button onclick={() => requestTransaction()}>Request Transfer</Button>
 		</Dialog.Footer>
 	</Dialog.Content>
 </Dialog.Root>

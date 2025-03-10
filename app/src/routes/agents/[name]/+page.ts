@@ -15,13 +15,37 @@ export const load = (async ({ params }) => {
 		});
 	} catch (error) {
 		// Agent is most likely already running
-		console.error(error)
+		console.error(error);
 	}
 	const agent = await MATRIARCH_CLIENT.get('/agents/:agent_name', {
 		params: {
 			agent_name: params.name
 		}
 	});
+
+	// We'll try and get the agent's address. It may not exist
+	let evmAddress: string | null = null;
+	try {
+		const { response } = await MATRIARCH_CLIENT.post(
+			'/agents/:agent_name/action',
+			{
+				connection: 'sonic',
+				action: 'get-address',
+				params: []
+			},
+			{
+				params: {
+					agent_name: params.name
+				}
+			}
+		);
+		if (response) {
+			const rightHandAddress = (response as string).split('0x').at(-1);
+			evmAddress = rightHandAddress ? `0x${rightHandAddress}` : null;
+		}
+	} catch (error) {
+		console.error(`Couldn't get address for agent ${params.name}`)
+	}
 
 	let agentActions: z.infer<typeof schemas.AgentActionsResponse.shape.response> | null = null;
 	try {
@@ -35,5 +59,5 @@ export const load = (async ({ params }) => {
 		console.error(`Agent ${params.name} isn't running - ${error}`);
 	}
 
-	return { agent, actions: agentActions };
+	return { agent, evmAddress, actions: agentActions };
 }) satisfies PageLoad;

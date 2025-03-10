@@ -17,6 +17,9 @@ importers:
       openapi-fetch:
         specifier: ^0.13.4
         version: 0.13.4
+      svelte-qrcode:
+        specifier: ^1.0.1
+        version: 1.0.1
       viem:
         specifier: ^2.23.6
         version: 2.23.6(typescript@5.8.2)(zod@3.24.2)
@@ -3344,6 +3347,9 @@ packages:
   pure-rand@6.1.0:
     resolution: {integrity: sha512-bVWawvoZoBYpp6yIoQtQXHZjmz35RSVHnUOTefl8Vcjr8snTPY1wnpSPMWekcFwbxI6gtmT7rSYPFvz71ldiOA==}
 
+  qrious@4.0.2:
+    resolution: {integrity: sha512-xWPJIrK1zu5Ypn898fBp8RHkT/9ibquV2Kv24S/JY9VYEhMBMKur1gHVsOiNUh7PHP9uCgejjpZUHUIXXKoU/g==}
+
   qs@6.13.0:
     resolution: {integrity: sha512-+38qI9SOr8tfZ4QmJNplMUxqjbe7LKvvZgWdExBOmd+egZTtjLB67Gu0HRX3u/XOq7UU2Nx6nsjvS16Z9uwfpg==}
     engines: {node: '>=0.6'}
@@ -3741,6 +3747,9 @@ packages:
         optional: true
       typescript:
         optional: true
+
+  svelte-qrcode@1.0.1:
+    resolution: {integrity: sha512-l1RcxDWkQqtBWUkolYee/IHGVKSgm1I2PdF8yVoIRqzKCc3kXpCXSVsMfrMSavWW2/BXvKu5Orv+JGbrO5onsw==}
 
   svelte-sonner@0.3.28:
     resolution: {integrity: sha512-K3AmlySeFifF/cKgsYNv5uXqMVNln0NBAacOYgmkQStLa/UoU0LhfAACU6Gr+YYC8bOCHdVmFNoKuDbMEsppJg==}
@@ -7578,6 +7587,8 @@ snapshots:
   pure-rand@6.1.0:
     optional: true
 
+  qrious@4.0.2: {}
+
   qs@6.13.0:
     dependencies:
       side-channel: 1.1.0
@@ -8016,6 +8027,10 @@ snapshots:
       postcss: 8.5.3
       postcss-load-config: 4.0.2(postcss@8.5.3)
       typescript: 5.8.2
+
+  svelte-qrcode@1.0.1:
+    dependencies:
+      qrious: 4.0.2
 
   svelte-sonner@0.3.28(svelte@5.20.5):
     dependencies:

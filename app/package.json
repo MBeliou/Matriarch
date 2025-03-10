@@ -75,6 +75,7 @@
 		"@matriarch/chat": "workspace:*",
 		"@zodios/core": "^10.9.6",
 		"openapi-fetch": "^0.13.4",
+		"svelte-qrcode": "^1.0.1",
 		"viem": "^2.23.6"
 	}
 }

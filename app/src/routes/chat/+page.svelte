@@ -31,7 +31,7 @@
 				{#if room.participants.length > 0}
 					<div class="flex flex-wrap gap-4">
 						{#each room.participants as participant}
-							<Badge class="capitalize">
+							<Badge class="capitalize" variant={participant.username === "Human" ? "default": "secondary"}>
 								{participant.username}
 							</Badge>
 						{/each}

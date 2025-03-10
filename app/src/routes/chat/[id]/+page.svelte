@@ -68,7 +68,7 @@
 				{message.sender.model}
 			</div>
 		</div>
-		<div class="mt-2 max-w-[300px] text-pretty">
+		<div class="mt-2 max-w-[60%] text-pretty">
 			{message.content}
 		</div>
 		<div class="text-muted-foreground mt-4 text-right text-xs">

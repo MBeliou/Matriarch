@@ -3,27 +3,34 @@
 	import type { z } from 'zod';
 	export type PanelProps = {
 		agent: z.infer<typeof schemas.AgentResponse>;
+		docs?: Snippet;
 	};
 </script>
 
 <script lang="ts">
 	import * as Avatar from '$lib/components/ui/avatar/index.js';
+	
+	import type { Snippet } from 'svelte';
 
-	let { agent }: PanelProps = $props();
+	let { agent, docs }: PanelProps = $props();
 </script>
 
 <div class="space-y-2 divide-y overflow-y-auto [&>*]:p-4">
-	<div class="flex items-center">
-		<Avatar.Root>
-			<Avatar.Image src="/orinfumo.png" alt="{agent.name} avatar" />
-			<Avatar.Fallback>{agent.name}</Avatar.Fallback>
-		</Avatar.Root>
-		<div class="ml-2">
-			<h1 class="text-xl">
-				{agent.name}
-			</h1>
-			<p class="text-muted-foreground text-sm">Agent #{agent.id}</p>
+	<div class="flex justify-between">
+		<div class="flex items-center">
+			<Avatar.Root>
+				<Avatar.Image src="/orinfumo.png" alt="{agent.name} avatar" />
+				<Avatar.Fallback>{agent.name}</Avatar.Fallback>
+			</Avatar.Root>
+			<div class="ml-2">
+				<h1 class="text-xl">
+					{agent.name}
+				</h1>
+				<p class="text-muted-foreground text-sm">Agent #{agent.id}</p>
+			</div>
 		</div>
+
+		{@render docs?.()}
 	</div>
 
 	<div>
@@ -35,7 +42,7 @@
 
 	<div>
 		<h2>Traits</h2>
-		<ul class="grid grid-cols-2 gap-2 mt-1">
+		<ul class="mt-1 grid grid-cols-2 gap-2">
 			{#each agent.traits as trait}
 				<li>{trait}</li>
 			{/each}

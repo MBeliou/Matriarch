@@ -12,13 +12,15 @@
 	import { z } from 'zod';
 	import Panel, { type PanelProps } from './panel.svelte';
 	import Spinner from 'lucide-svelte/icons/loader-circle';
-	import { Button } from '$lib/components/ui/button';
 	import LinkIcon from 'lucide-svelte/icons/link';
 	import { setupAutoScroll } from '$lib/utils';
-
+	import Twitter from '$lib/components/app/actions/twitter.svelte';
+	import EvmQrCode from '$lib/components/app/actions/EvmQRCode.svelte';
+	import Button from '$lib/components/ui/button/button.svelte';
+	import BookIcon from 'lucide-svelte/icons/book';
+	
 	let { data } = $props();
 
-	let inputRef: HTMLInputElement;
 	let input = $state<string>(null!);
 
 	type Message = {
@@ -100,8 +102,6 @@
 
 	let isUserRequestingAction = $state(false);
 
-	
-
 	onMount(() => {
 		const scroller = setupAutoScroll('scroller');
 
@@ -133,6 +133,34 @@
 			url: url
 		};
 	}
+
+	const POST_TWEET_SYSTEM_PROMPT = `
+	Generate an engaging tweet. Don't include any hashtags, links or emojis. Keep it under 280 characters.
+    The tweets should be pure commentary, do not shill any coins or projects apart from ${data.agent.name}. Do not repeat any of the
+    tweets that were given as example. Avoid the words AI and crypto.
+	Stay in character, here's your biography: ${data.agent.bio.join('.')}.
+	Here are your traits: ${data.agent.traits.join(',')}.
+
+	If any, take into account the info the user had given you to create your tweet.
+	`;
+
+	async function promptLLMForTweet(userPrompt: string) {
+		const actionRequest = await MATRIARCH_CLIENT.post(
+			'/agents/:agent_name/action',
+			{
+				connection: 'openai',
+				action: 'start-chat',
+				params: [POST_TWEET_SYSTEM_PROMPT, userPrompt, 'gpt-3.5-turbo']
+			},
+			{
+				params: {
+					agent_name: data.agent.name
+				}
+			}
+		);
+
+		return actionRequest.response as string;
+	}
 </script>
 
 <div class="grid h-full grid-cols-3 grid-rows-1">
@@ -153,7 +181,7 @@
 									text-foreground w-full overflow-hidden rounded border"
 								>
 									<div class="px-4 py-2">
-										{reworkedResult.content}
+										{reworkedResult.content || 'No response from the agent'}
 										{#if reworkedResult.url}
 											<a
 												href={reworkedResult.url}
@@ -262,7 +290,11 @@
 	</div>
 	<div class="flex max-h-[90svh] flex-col">
 		<div class="relative flex flex-1 flex-col overflow-y-hidden border-b">
-			<Panel agent={data.agent as unknown as PanelProps['agent']}></Panel>
+			<Panel agent={data.agent as unknown as PanelProps['agent']}>
+				{#snippet docs()}
+					<Button size="icon" variant="outline" href="/agents/{data.agent.name}/llms.txt"><BookIcon></BookIcon></Button>
+				{/snippet}
+			</Panel>
 			<div
 				class="to-background/60 pointer-events-none absolute inset-0 bg-gradient-to-b from-transparent via-transparent"
 			></div>
@@ -271,10 +303,81 @@
 			<h2 class="text-xl font-medium">Actions</h2>
 			<div class=" mt-2 flex flex-wrap gap-4">
 				<Transfer
-					onSubmit={() => {
+					onSubmit={async (to: string, amount: string, ticker: string | null) => {
 						console.log('submit these');
+						const action = 'transfer';
+						const connection = 'sonic';
+
+						const params = [to, amount];
+						if (ticker) {
+							// Ask for the actual address from the ticker
+							const { response } = await requestAction({
+								connection,
+								action: 'get-token-by-ticker',
+								params: [ticker]
+							});
+							if (!response) {
+								chatStorage.content.push({
+									origin: 'matriarch',
+									action: `${action} (${params.join(', ')})`,
+									connection: connection,
+									result: ` get-token-by-ticker - invalid ticker ${ticker}`
+								});
+								return;
+							}
+							params.push(response as string);
+						}
+
+						console.dir(amount);
+
+						const { response } = await requestAction({
+							connection,
+							action,
+							params: params
+						});
+
+						chatStorage.content.push({
+							origin: 'matriarch',
+							action: `${action} (${params.join(', ')})`,
+							connection: connection,
+							result: response //latestTweets.response as string
+						});
 					}}
 				></Transfer>
+				<Twitter
+					onRequestLLM={(prompt) => promptLLMForTweet(prompt)}
+					onPostTweet={async (content) => {
+						const action = 'post-tweet';
+						const connection = 'twitter';
+						const params = [content];
+
+						const actionResponse = await requestAction({
+							action,
+							connection,
+							params
+						});
+
+						// NOTE: currently Zerepy does not return any info about the posted tweet
+						// NOTE: skipping because of outrageous limits on free twitter api plan
+						/*
+						const latestTweets = await requestAction({
+							action: 'read-timeline',
+							connection,
+							params: [1]
+						});*/
+
+						// By now, we should be ok
+						chatStorage.content.push({
+							origin: 'matriarch',
+							action: `${action} (${params.join(', ')})`,
+							connection: connection,
+							result: 'Tweet posted successfully' //latestTweets.response as string
+						});
+					}}
+				></Twitter>
+				{#if data.evmAddress}
+					<EvmQrCode address={data.evmAddress}></EvmQrCode>
+				{/if}
 			</div>
 		</div>
 	</div>
